@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "小蜜",
+    "slug": "zhixue-ai",
+    "version": "1.5.2",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
+    "android": {
+      "package": "com.zhixueai.student",
+      "versionCode": 17,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#071426"
+      },
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#071426"
+        }
+      ]
+    ],
+    "extra": {},
+    "owner": "jeffrey760719"
+  }
+}
