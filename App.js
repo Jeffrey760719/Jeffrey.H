@@ -57,13 +57,78 @@ export default function App(){
  function importBackup(){try{if(backupInput.length>2_000_000)throw new Error("备份文件过大");const d=validateBackup(JSON.parse(backupInput));setRecords(d.records);setSaved(d.saved);setWrongs(d.wrongs);setCheckins(d.checkins);setTasks(d.tasks);setTaskDate(todayKey());setStudent(d.student);setGrade(d.grade);setCount(d.count);setMinutes(d.minutes);setBackupInput("");Alert.alert("恢复成功","已验证备份格式，并将数据恢复到本机。");}catch(e){Alert.alert("无法恢复",e.message||"请粘贴由小蜜导出的完整 JSON 备份内容。");}}
 
  async function send(){
-  const q=input.trim(); if(!q||busy)return;
-  setInput("");setBusy(true);
-  const answer=localTutor(q,subject,grade);
-  setHistory(h=>[...h,{role:"user",content:q},{role:"assistant",content:answer}]);
-  setRecords(r=>[{id:String(Date.now()),subject,question:q,answer,createdAt:new Date().toISOString()},...r].slice(0,100));
-  setCount(v=>v+1);setMinutes(v=>v+3);setBusy(false);
- }
+  const q=input.trim();
+  if(!q||busy)return;
+
+  setInput("");
+  setBusy(true);
+
+  try{
+    const messages=[
+      {
+        role:"system",
+        content:`你是小蜜 AI，一位耐心、专业的中文学习老师。学生年级：${grade}。当前学科：${subject}。请使用简体中文，讲解清楚，循序渐进，帮助学生理解知识，不要只给答案。`
+      },
+      ...history.slice(-10).map(m=>({
+        role:m.role,
+        content:m.content
+      })),
+      {role:"user",content:q}
+    ];
+
+    const response=await fetch(
+      "https://xiaomi-ai.jeffrey760719.workers.dev",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({messages})
+      }
+    );
+
+    const data=await response.json();
+
+    if(!response.ok){
+      throw new Error(data.detail||data.error||"AI 服务暂时不可用");
+    }
+
+    if(typeof data.reply!=="string"||!data.reply.trim()){
+      throw new Error("AI 返回内容为空，请稍后重试");
+    }
+
+    const answer=data.reply.trim();
+
+    setHistory(h=>[
+      ...h,
+      {role:"user",content:q},
+      {role:"assistant",content:answer}
+    ]);
+
+    setRecords(r=>[
+      {
+        id:String(Date.now()),
+        subject,
+        question:q,
+        answer,
+        createdAt:new Date().toISOString()
+      },
+      ...r
+    ].slice(0,100));
+
+    setCount(v=>v+1);
+    setMinutes(v=>v+3);
+
+  }catch(e){
+    setInput(q);
+    Alert.alert(
+      "小蜜 AI 暂时无法回答",
+      e.message||"请检查网络连接后重试"
+    );
+  }finally{
+    setBusy(false);
+  }
+}
 
  const Home=()=> <ScrollView contentContainerStyle={s.content}>
   <Header title={`你好，${student} 👋`} subtitle={`${grade} · 今天也来学点新知识吧`}/>
