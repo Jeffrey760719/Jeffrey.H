@@ -2,13 +2,13 @@
   "expo": {
     "name": "小蜜",
     "slug": "zhixue-ai",
-    "version": "1.5.2",
+    "version": "1.5.3",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
     "android": {
       "package": "com.zhixueai.student",
-      "versionCode": 17,
+      "versionCode": 18,
 "blockedPermissions": [
   "android.permission.READ_EXTERNAL_STORAGE",
   "android.permission.WRITE_EXTERNAL_STORAGE",
