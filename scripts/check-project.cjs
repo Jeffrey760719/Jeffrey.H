@@ -20,7 +20,7 @@ for (const asset of ['assets/icon.png', 'assets/adaptive-icon.png', 'assets/spla
   ok(`${asset} exists and is a PNG`, b.length > 8 && b.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])));
 }
 const appJs = fs.readFileSync(path.join(root, 'App.js'), 'utf8');
-ok('Free offline tutor mode is present', appJs.includes('localTutor') && appJs.includes('不会调用 OpenAI API'));
+ok('Cloud AI tutor connection is present', appJs.includes('xiaomi-ai.jeffrey760719.workers.dev') && appJs.includes('method:"POST"'));
 ok('Backup import validates data', appJs.includes('validateBackup(JSON.parse(backupInput))'));
 const syntax = spawnSync(process.execPath, ['--check', path.join(root, 'App.js')], { encoding: 'utf8' });
 ok('App.js JavaScript syntax passes Node parser', syntax.status === 0);
