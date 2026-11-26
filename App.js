@@ -65,16 +65,15 @@ export default function App(){
 
   try{
     const messages=[
-      {
-        role:"system",
-        content:`你是小蜜 AI，一位耐心、专业的中文学习老师。学生年级：${grade}。当前学科：${subject}。请使用简体中文，讲解清楚，循序渐进，帮助学生理解知识，不要只给答案。`
-      },
-      ...history.slice(-10).map(m=>({
-        role:m.role,
-        content:m.content
-      })),
-      {role:"user",content:q}
-    ];
+  ...history.slice(-10).map(m=>({
+    role:m.role,
+    content:m.content
+  })),
+  {
+    role:"user",
+    content:`请你作为小蜜 AI，一位耐心、专业的中文学习老师，为学生提供循序渐进的辅导。学生年级：${grade}。当前学科：${subject}。请使用简体中文，讲解清楚，帮助学生理解知识，不要只给答案。\n\n学生问题：${q}`
+  }
+];
 
     const response=await fetch(
       "https://xiaomi-ai.jeffrey760719.workers.dev",
