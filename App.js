@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Speech from "expo-speech";
 import {SafeAreaView,View,Text,TextInput,TouchableOpacity,ScrollView,StyleSheet,StatusBar,KeyboardAvoidingView,Platform,Alert,ActivityIndicator,Share} from "react-native";
 
 const STORAGE_KEY = "zhixue_ai_local_v1";
@@ -97,7 +98,12 @@ export default function App(){
     }
 
     const answer=data.reply.trim();
-
+Speech.stop();
+Speech.speak(answer, {
+  language: "zh-CN",
+  rate: 0.95,
+  pitch: 1.0
+});
     setHistory(h=>[
       ...h,
       {role:"user",content:q},
