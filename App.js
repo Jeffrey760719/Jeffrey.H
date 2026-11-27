@@ -138,12 +138,12 @@ if(speechEnabled){
   }
 }
 
- const Home=()=> <View style={s.homeScreen}>
-  <View style={{flex:1,alignItems:"center",justifyContent:"center",paddingBottom:28}}>
+ const Home=()=> <View style={[s.homeScreen,keyboardVisible&&{justifyContent:"flex-end",paddingTop:0,paddingBottom:6}]}>
+  {!keyboardVisible&&<View style={{flex:1,alignItems:"center",justifyContent:"center",paddingBottom:28}}>
    <View style={s.homeMark}><Text style={{color:"#FFFFFF",fontSize:30,fontWeight:"900"}}>蜜</Text></View>
    <Text style={s.homeBrand}>小蜜</Text>
    <Text style={s.homeGreeting}>你好！今天想学习什么？</Text>
-  </View>
+  </View>}
   <View style={{flexShrink:0}}>
    {!keyboardVisible&&<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingBottom:12}}>
     {[["✦","学习助手","tutor"],["▤","学习记录","data"],["☆","错题收藏","data"],["○","个人中心","profile"]].map(([ic,label,target])=><TouchableOpacity key={label} style={s.homeShortcut} onPress={()=>setTab(target)}><Text style={s.homeShortcutIcon}>{ic}</Text><Text style={s.homeShortcutText}>{label}</Text></TouchableOpacity>)}
