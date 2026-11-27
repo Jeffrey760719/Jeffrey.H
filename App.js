@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Speech from "expo-speech";
-import {SafeAreaView,View,Text,TextInput,TouchableOpacity,ScrollView,StyleSheet,StatusBar,KeyboardAvoidingView,Platform,Alert,ActivityIndicator,Share} from "react-native";
+import {SafeAreaView,View,Text,TextInput,TouchableOpacity,ScrollView,StyleSheet,StatusBar,KeyboardAvoidingView,Keyboard,Platform,Alert,ActivityIndicator,Share} from "react-native";
 
 const STORAGE_KEY = "zhixue_ai_local_v1";
 const C={bg:"#FFFFFF",panel:"#FFFFFF",panel2:"#F6F7F9",cyan:"#268BEA",blue:"#397BFF",purple:"#8B72D9",text:"#202124",muted:"#777777",green:"#259B70",line:"#E8E8E8"};
@@ -39,9 +39,10 @@ function localTutor(q,subject,grade){
  return `【${subject} · ${grade}｜离线学习助手】\n\n你提出的问题：${q}\n\n一、先拆解问题\n把题目中的关键词、已知条件和最终要求分别写出来，确认自己究竟要解释概念、求出结果，还是分析原因。\n\n二、建议的思考方法\n${tips[subject]||"先明确概念和条件，再按逻辑顺序分析，并用题目中的信息验证结论。"}\n\n三、自己检查\n1. 我用到的概念或公式是什么？\n2. 每一步是否能由已知条件推出？\n3. 结论是否回答了题目？\n\n四、试着继续练习\n请把题目中的一个条件换掉，预测答案会怎样变化；也可以把你的解题步骤发来，我可以继续帮你检查思路。\n\n说明：当前是免费离线演示模式，不会调用 OpenAI API，也不会产生 API 费用。它提供学习方法提示，不等同于针对具体题目的完整 AI 解答。`;
 }
 export default function App(){
- const [tab,setTab]=useState("home"),[student,setStudent]=useState("同学"),[grade,setGrade]=useState("初中一年级"),[speechEnabled,setSpeechEnabled]=useState(true);
+ const [tab,setTab]=useState("home"),[student,setStudent]=useState("同学"),[grade,setGrade]=useState("初中一年级"),[speechEnabled,setSpeechEnabled]=useState(true),[keyboardVisible,setKeyboardVisible]=useState(false);
  const [subject,setSubject]=useState("数学"),[input,setInput]=useState(""),[busy,setBusy]=useState(false);
  const [history,setHistory]=useState([{role:"assistant",content:initial}]),[saved,setSaved]=useState([]),[count,setCount]=useState(0),[minutes,setMinutes]=useState(0),[records,setRecords]=useState([]),[wrongs,setWrongs]=useState([]),[checkins,setCheckins]=useState([]),[tasks,setTasks]=useState(defaultTasks),[taskDate,setTaskDate]=useState(todayKey()),[search,setSearch]=useState(""),[backupInput,setBackupInput]=useState(""),[storageReady,setStorageReady]=useState(false);
+ useEffect(()=>{const show=Keyboard.addListener("keyboardDidShow",()=>setKeyboardVisible(true));const hide=Keyboard.addListener("keyboardDidHide",()=>setKeyboardVisible(false));return()=>{show.remove();hide.remove();};},[]);
  useEffect(()=>{(async()=>{try{const raw=await AsyncStorage.getItem(STORAGE_KEY);if(raw){const d=JSON.parse(raw);if(d.student)setStudent(d.student);if(d.grade)setGrade(d.grade);if(Array.isArray(d.saved))setSaved(d.saved);if(Array.isArray(d.records))setRecords(d.records);if(Array.isArray(d.wrongs))setWrongs(d.wrongs);if(Array.isArray(d.checkins))setCheckins(d.checkins);if(d.taskDate===todayKey()&&Array.isArray(d.tasks))setTasks(d.tasks);else{setTasks(defaultTasks);setTaskDate(todayKey());}if(Number.isFinite(d.count))setCount(d.count);if(Number.isFinite(d.minutes))setMinutes(d.minutes);}}catch(e){console.warn("Local data restore failed",e);}finally{setStorageReady(true);}})();},[]);
  useEffect(()=>{if(!storageReady)return;AsyncStorage.setItem(STORAGE_KEY,JSON.stringify({student,grade,saved,count,minutes,records,wrongs,checkins,tasks,taskDate})).catch(e=>console.warn("Local data save failed",e));},[storageReady,student,grade,saved,count,minutes,records,wrongs,checkins,tasks,taskDate]);
 
@@ -143,10 +144,10 @@ if(speechEnabled){
    <Text style={s.homeBrand}>小蜜</Text>
    <Text style={s.homeGreeting}>你好！今天想学习什么？</Text>
   </View>
-  <View>
-   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingBottom:12}}>
+  <View style={{flexShrink:0}}>
+   {!keyboardVisible&&<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingBottom:12}}>
     {[["✦","学习助手","tutor"],["▤","学习记录","data"],["☆","错题收藏","data"],["○","个人中心","profile"]].map(([ic,label,target])=><TouchableOpacity key={label} style={s.homeShortcut} onPress={()=>setTab(target)}><Text style={s.homeShortcutIcon}>{ic}</Text><Text style={s.homeShortcutText}>{label}</Text></TouchableOpacity>)}
-   </ScrollView>
+   </ScrollView>}
    <View style={s.homeComposer}>
     <TouchableOpacity onPress={()=>Alert.alert("语音输入","目前支持回答后语音播报；语音输入功能还未加入。")} style={s.homeTool}><Text style={s.homeToolIcon}>◖))</Text></TouchableOpacity>
     <TextInput value={input} onChangeText={setInput} placeholder="发消息或输入学习问题…" placeholderTextColor="#999999" multiline style={s.homeInput}/>
@@ -154,7 +155,7 @@ if(speechEnabled){
     <TouchableOpacity onPress={()=>Alert.alert("更多功能","更多功能正在开发中。")} style={s.homeTool}><Text style={s.homeToolIcon}>＋</Text></TouchableOpacity>
     <TouchableOpacity onPress={()=>setTab("tutor")} style={s.homeSend}><Text style={{color:"#FFFFFF",fontSize:19,fontWeight:"900"}}>↑</Text></TouchableOpacity>
    </View>
-   <Text style={s.homeDisclaimer}>内容由 AI 生成，请注意核实</Text>
+   {!keyboardVisible&&<Text style={s.homeDisclaimer}>内容由 AI 生成，请注意核实</Text>}
   </View>
  </View>;
  const Tutor=()=> <KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==="ios"?"padding":undefined}><View style={s.content}><Header title="学习助手" subtitle="先选学科，再输入问题；AI智能辅导模式帮助你理解知识、分析问题并掌握解题方法。"/>
